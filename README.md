@@ -12,7 +12,7 @@ A Flask-based customer data collection application designed for sales teams to s
 
 ### 📋 Enhanced Intake Form
 - **Smart Field Formatting**: 
-  - Phone numbers format as "(504) 892-1202" while typing
+  - Phone numbers format as "(888) 888-8888" while typing
   - SSN fields show as dots but become visible when selected
   - Date fields enforce "MM/DD/YYYY" format with auto-formatting
 - **Comprehensive Data Collection**:
