@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Intake - Secure Intake{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Customer Pre-Qualification Intake</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('index') }}">
+                    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                    
+                    <!-- Personal Information -->
+                    <div class="mb-4">
+                        <h5 class="text-secondary">Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ form_data.first_name if form_data else '' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name"
+                                       value="{{ form_data.last_name if form_data else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       value="{{ form_data.email if form_data else '' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="mobile_phone" class="form-label">Mobile Phone *</label>
+                                <input type="tel" class="form-control" id="mobile_phone" name="mobile_phone"
+                                       placeholder="(504) 892-1202" value="{{ form_data.mobile_phone if form_data else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="ssn" class="form-label">Social Security Number *</label>
+                                <input type="password" class="form-control ssn-field" id="ssn" name="ssn" 
+                                       placeholder="XXX-XX-XXXX" value="{{ form_data.ssn if form_data else '' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="dob" class="form-label">Date of Birth *</label>
+                                <input type="text" class="form-control" id="dob" name="dob"
+                                       placeholder="MM/DD/YYYY" maxlength="10" value="{{ form_data.dob if form_data else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employment & Financial Information -->
+                    <div class="mb-4">
+                        <h5 class="text-secondary">Employment & Financial Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="employer" class="form-label">Employer *</label>
+                                <input type="text" class="form-control" id="employer" name="employer"
+                                       placeholder="Company Name" value="{{ form_data.employer if form_data else '' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="occupation" class="form-label">Occupation *</label>
+                                <input type="text" class="form-control" id="occupation" name="occupation"
+                                       placeholder="Job Title" value="{{ form_data.occupation if form_data else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="monthly_income" class="form-label">Monthly Income Before Taxes *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="monthly_income" name="monthly_income" 
+                                           min="0" step="100" placeholder="5,000" value="{{ form_data.monthly_income if form_data else '' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="employment_status" class="form-label">Employment Status *</label>
+                                <select class="form-select" id="employment_status" name="employment_status" required>
+                                    <option value="">Select employment status</option>
+                                    <option value="Full-time" {% if form_data and form_data.employment_status == 'Full-time' %}selected{% endif %}>Full-time</option>
+                                    <option value="Part-time" {% if form_data and form_data.employment_status == 'Part-time' %}selected{% endif %}>Part-time</option>
+                                    <option value="Self-employed" {% if form_data and form_data.employment_status == 'Self-employed' %}selected{% endif %}>Self-employed</option>
+                                    <option value="Retired" {% if form_data and form_data.employment_status == 'Retired' %}selected{% endif %}>Retired</option>
+                                    <option value="Unemployed" {% if form_data and form_data.employment_status == 'Unemployed' %}selected{% endif %}>Unemployed</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Additional Income Sources -->
+                        <div id="additional-income-container" class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="text-secondary mb-0">Additional Income Sources</h6>
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="add-income-btn">
+                                    <i class="bi bi-plus-circle"></i> Add Income Source
+                                </button>
+                            </div>
+                            <div id="income-sources">
+                                <!-- Additional income sources will be dynamically added here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Driver's License -->
+                    <div class="mb-4">
+                        <h5 class="text-secondary">Driver's License</h5>
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="driver_license_number" class="form-label">Driver's License Number *</label>
+                                <input type="text" class="form-control" id="driver_license_number" name="driver_license_number"
+                                       value="{{ form_data.driver_license_number if form_data else '' }}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="driver_license_state" class="form-label">State *</label>
+                                <input type="text" class="form-control" id="driver_license_state" name="driver_license_state" 
+                                       placeholder="CA" maxlength="2" value="{{ form_data.driver_license_state if form_data else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-4">
+                        <h5 class="text-secondary">Address</h5>
+                        <div class="mb-3">
+                            <label for="address_line1" class="form-label">Address Line 1 *</label>
+                            <input type="text" class="form-control" id="address_line1" name="address_line1"
+                                   value="{{ form_data.address_line1 if form_data else '' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address_line2" class="form-label">Address Line 2</label>
+                            <input type="text" class="form-control" id="address_line2" name="address_line2"
+                                   value="{{ form_data.address_line2 if form_data else '' }}">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5 mb-3">
+                                <label for="city" class="form-label">City *</label>
+                                <input type="text" class="form-control" id="city" name="city"
+                                       value="{{ form_data.city if form_data else '' }}" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="state" class="form-label">State *</label>
+                                <input type="text" class="form-control" id="state" name="state" 
+                                       placeholder="CA" maxlength="2" value="{{ form_data.state if form_data else '' }}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="zip" class="form-label">ZIP Code *</label>
+                                <input type="text" class="form-control" id="zip" name="zip" 
+                                       placeholder="12345" maxlength="5" value="{{ form_data.zip if form_data else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Information -->
+                    <div class="mb-4">
+                        <h5 class="text-secondary">Project Information</h5>
+                        <div class="mb-3">
+                            <label for="project_cost" class="form-label">Project Cost *</label>
+                            <input type="number" class="form-control" id="project_cost" name="project_cost" 
+                                   min="0" step="100" value="{{ form_data.project_cost if form_data else '' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ form_data.notes if form_data else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Co-Applicant Information -->
+                    <div class="mb-4" id="co-applicant-section" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-secondary">Co-Applicant Information</h5>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="remove-co-applicant-btn">
+                                <i class="bi bi-x-circle"></i> Remove Co-Applicant
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="co_first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="co_first_name" name="co_first_name" 
+                                       value="{{ form_data.co_first_name if form_data else '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="co_last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="co_last_name" name="co_last_name"
+                                       value="{{ form_data.co_last_name if form_data else '' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="co_email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="co_email" name="co_email"
+                                       value="{{ form_data.co_email if form_data else '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="co_mobile_phone" class="form-label">Mobile Phone</label>
+                                <input type="tel" class="form-control" id="co_mobile_phone" name="co_mobile_phone"
+                                       placeholder="(504) 892-1202" value="{{ form_data.co_mobile_phone if form_data else '' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="co_ssn" class="form-label">Social Security Number</label>
+                                <input type="password" class="form-control ssn-field" id="co_ssn" name="co_ssn" 
+                                       placeholder="XXX-XX-XXXX" value="{{ form_data.co_ssn if form_data else '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="co_dob" class="form-label">Date of Birth</label>
+                                <input type="text" class="form-control" id="co_dob" name="co_dob"
+                                       placeholder="MM/DD/YYYY" maxlength="10" value="{{ form_data.co_dob if form_data else '' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="co_employer" class="form-label">Employer</label>
+                                <input type="text" class="form-control" id="co_employer" name="co_employer"
+                                       placeholder="Company Name" value="{{ form_data.co_employer if form_data else '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="co_occupation" class="form-label">Occupation</label>
+                                <input type="text" class="form-control" id="co_occupation" name="co_occupation"
+                                       placeholder="Job Title" value="{{ form_data.co_occupation if form_data else '' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="co_monthly_income" class="form-label">Monthly Income Before Taxes</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="co_monthly_income" name="co_monthly_income" 
+                                           min="0" step="100" placeholder="5,000" value="{{ form_data.co_monthly_income if form_data else '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="co_employment_status" class="form-label">Employment Status</label>
+                                <select class="form-select" id="co_employment_status" name="co_employment_status">
+                                    <option value="">Select employment status</option>
+                                    <option value="Full-time" {% if form_data and form_data.co_employment_status == 'Full-time' %}selected{% endif %}>Full-time</option>
+                                    <option value="Part-time" {% if form_data and form_data.co_employment_status == 'Part-time' %}selected{% endif %}>Part-time</option>
+                                    <option value="Self-employed" {% if form_data and form_data.co_employment_status == 'Self-employed' %}selected{% endif %}>Self-employed</option>
+                                    <option value="Retired" {% if form_data and form_data.co_employment_status == 'Retired' %}selected{% endif %}>Retired</option>
+                                    <option value="Unemployed" {% if form_data and form_data.co_employment_status == 'Unemployed' %}selected{% endif %}>Unemployed</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Co-Applicant Button -->
+                    <div class="mb-4 text-center" id="add-co-applicant-section">
+                        <button type="button" class="btn btn-outline-secondary" id="add-co-applicant-btn">
+                            <i class="bi bi-person-plus"></i> Add Co-Applicant
+                        </button>
+                    </div>
+
+                    <!-- Consent -->
+                    <div class="mb-4">
+                        <h5 class="text-secondary">Consent & Authorization</h5>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="consent_soft_pull" name="consent_soft_pull" required
+                                   {% if form_data and form_data.consent_soft_pull %}checked{% endif %}>
+                            <label class="form-check-label" for="consent_soft_pull">
+                                I authorize a soft credit pull to assess my creditworthiness *
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="consent_share" name="consent_share" required
+                                   {% if form_data and form_data.consent_share %}checked{% endif %}>
+                            <label class="form-check-label" for="consent_share">
+                                I consent to sharing my information with approved lending partners *
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Submit Pre-Qualification</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Phone number formatting
+    function formatPhoneNumber(input) {
+        const value = input.value.replace(/\D/g, '');
+        let formattedValue = '';
+        
+        if (value.length > 0) {
+            formattedValue = '(' + value.substring(0, 3);
+        }
+        if (value.length >= 4) {
+            formattedValue += ') ' + value.substring(3, 6);
+        }
+        if (value.length >= 7) {
+            formattedValue += '-' + value.substring(6, 10);
+        }
+        
+        input.value = formattedValue;
+    }
+
+    // Date formatting (MM/DD/YYYY)
+    function formatDate(input) {
+        let value = input.value.replace(/\D/g, '');
+        let formattedValue = '';
+        
+        if (value.length >= 1) {
+            formattedValue = value.substring(0, 2);
+        }
+        if (value.length >= 3) {
+            formattedValue += '/' + value.substring(2, 4);
+        }
+        if (value.length >= 5) {
+            formattedValue += '/' + value.substring(4, 8);
+        }
+        
+        input.value = formattedValue;
+    }
+
+    // SSN field behavior (password type that becomes text on focus)
+    function setupSSNField(ssnField) {
+        ssnField.addEventListener('focus', function() {
+            this.type = 'text';
+        });
+        
+        ssnField.addEventListener('blur', function() {
+            if (this.value) {
+                this.type = 'password';
+            }
+        });
+    }
+
+    // Apply phone formatting to all phone fields
+    const phoneFields = document.querySelectorAll('input[type="tel"]');
+    phoneFields.forEach(field => {
+        field.addEventListener('input', function() {
+            formatPhoneNumber(this);
+        });
+    });
+
+    // Apply date formatting to date fields
+    const dateFields = document.querySelectorAll('#dob, #co_dob');
+    dateFields.forEach(field => {
+        field.addEventListener('input', function() {
+            formatDate(this);
+        });
+    });
+
+    // Setup SSN fields
+    const ssnFields = document.querySelectorAll('.ssn-field');
+    ssnFields.forEach(field => {
+        setupSSNField(field);
+    });
+
+    // Additional income sources functionality
+    let incomeSourceCount = 0;
+    const addIncomeBtn = document.getElementById('add-income-btn');
+    const incomeSourcesContainer = document.getElementById('income-sources');
+
+    addIncomeBtn.addEventListener('click', function() {
+        incomeSourceCount++;
+        const incomeSourceHtml = `
+            <div class="card mb-3 income-source" id="income-source-${incomeSourceCount}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="card-title mb-0">Additional Income Source ${incomeSourceCount}</h6>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-income-btn" data-source-id="${incomeSourceCount}">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="income_source_${incomeSourceCount}" class="form-label">Income Source</label>
+                            <input type="text" class="form-control" id="income_source_${incomeSourceCount}" name="additional_income_source_${incomeSourceCount}" 
+                                   placeholder="e.g., Part-time job, Rental income">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="income_amount_${incomeSourceCount}" class="form-label">Monthly Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="income_amount_${incomeSourceCount}" name="additional_income_amount_${incomeSourceCount}" 
+                                       min="0" step="50" placeholder="1,000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        incomeSourcesContainer.insertAdjacentHTML('beforeend', incomeSourceHtml);
+    });
+
+    // Remove income source functionality
+    incomeSourcesContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-income-btn') || e.target.closest('.remove-income-btn')) {
+            const button = e.target.closest('.remove-income-btn');
+            const sourceId = button.getAttribute('data-source-id');
+            const sourceElement = document.getElementById(`income-source-${sourceId}`);
+            sourceElement.remove();
+        }
+    });
+
+    // Co-applicant functionality
+    const addCoApplicantBtn = document.getElementById('add-co-applicant-btn');
+    const removeCoApplicantBtn = document.getElementById('remove-co-applicant-btn');
+    const coApplicantSection = document.getElementById('co-applicant-section');
+    const addCoApplicantSection = document.getElementById('add-co-applicant-section');
+
+    addCoApplicantBtn.addEventListener('click', function() {
+        coApplicantSection.style.display = 'block';
+        addCoApplicantSection.style.display = 'none';
+        
+        // Setup SSN field for co-applicant
+        const coSsnField = document.getElementById('co_ssn');
+        if (coSsnField) {
+            setupSSNField(coSsnField);
+        }
+    });
+
+    removeCoApplicantBtn.addEventListener('click', function() {
+        coApplicantSection.style.display = 'none';
+        addCoApplicantSection.style.display = 'block';
+        
+        // Clear co-applicant form fields
+        const coApplicantFields = coApplicantSection.querySelectorAll('input, select');
+        coApplicantFields.forEach(field => {
+            field.value = '';
+        });
+    });
+});
+</script>
+{% endblock %}

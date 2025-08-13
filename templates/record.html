@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Record #{{ record.id }} - Secure Intake{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Customer Record #{{ record.id }}</h2>
+            <div>
+                <small class="text-muted">Created: {{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC</small>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Customer Data -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Customer Information</h5>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="copyAll()">
+                            Copy All (Lender Format)
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Personal Information -->
+                        <h6 class="text-secondary mb-3">Personal Information</h6>
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>First Name:</strong>
+                                    <span class="ms-2">{{ data.first_name }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('first_name', '{{ data.first_name }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Last Name:</strong>
+                                    <span class="ms-2">{{ data.last_name }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('last_name', '{{ data.last_name }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Email:</strong>
+                                    <span class="ms-2">{{ data.email }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('email', '{{ data.email }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Mobile Phone:</strong>
+                                    <span class="ms-2">{{ data.mobile_phone }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('mobile_phone', '{{ data.mobile_phone }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>SSN:</strong>
+                                    <span class="ms-2">{{ data.ssn }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('ssn', '{{ data.ssn }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Date of Birth:</strong>
+                                    <span class="ms-2">{{ data.dob }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('dob', '{{ data.dob }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Financial Information -->
+                        <h6 class="text-secondary mb-3 mt-4">Financial Information</h6>
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Annual Income:</strong>
+                                    <span class="ms-2">${{ "{:,}".format(data.annual_income|int) }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('annual_income', '{{ data.annual_income }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Employment Status:</strong>
+                                    <span class="ms-2">{{ data.employment_status }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('employment_status', '{{ data.employment_status }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Driver's License -->
+                        <h6 class="text-secondary mb-3 mt-4">Driver's License</h6>
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>License Number:</strong>
+                                    <span class="ms-2">{{ data.driver_license_number }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('driver_license_number', '{{ data.driver_license_number }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>License State:</strong>
+                                    <span class="ms-2">{{ data.driver_license_state }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('driver_license_state', '{{ data.driver_license_state }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <h6 class="text-secondary mb-3 mt-4">Address</h6>
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Address Line 1:</strong>
+                                    <span class="ms-2">{{ data.address_line1 }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('address_line1', '{{ data.address_line1 }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {% if data.address_line2 %}
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Address Line 2:</strong>
+                                    <span class="ms-2">{{ data.address_line2 }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('address_line2', '{{ data.address_line2 }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>City:</strong>
+                                    <span class="ms-2">{{ data.city }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('city', '{{ data.city }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>State:</strong>
+                                    <span class="ms-2">{{ data.state }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('state', '{{ data.state }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>ZIP Code:</strong>
+                                    <span class="ms-2">{{ data.zip }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('zip', '{{ data.zip }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Project Information -->
+                        <h6 class="text-secondary mb-3 mt-4">Project Information</h6>
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Project Cost:</strong>
+                                    <span class="ms-2">${{ "{:,}".format(data.project_cost|int) }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('project_cost', '{{ data.project_cost }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {% if data.notes %}
+                        <div class="field-row">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>Notes:</strong>
+                                    <div class="ms-2 mt-1">{{ data.notes }}</div>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary copy-button" onclick="copyField('notes', '{{ data.notes }}')">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Consent -->
+                        <h6 class="text-secondary mb-3 mt-4">Consent</h6>
+                        <div class="field-row">
+                            <div>
+                                <strong>Soft Credit Pull Consent:</strong>
+                                <span class="ms-2 badge bg-{% if data.consent_soft_pull %}success{% else %}danger{% endif %}">
+                                    {% if data.consent_soft_pull %}Yes{% else %}No{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="field-row">
+                            <div>
+                                <strong>Share Information Consent:</strong>
+                                <span class="ms-2 badge bg-{% if data.consent_share %}success{% else %}danger{% endif %}">
+                                    {% if data.consent_share %}Yes{% else %}No{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lender Submission -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Lender Submission</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">Submit this application to approved lending partners.</p>
+                        
+                        <form method="POST" action="{{ url_for('submit_momnt', id=record.id) }}" class="mb-3">
+                            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                Submit to Momnt (Stub)
+                            </button>
+                        </form>
+                        
+                        <form method="POST" action="{{ url_for('submit_greensky', id=record.id) }}">
+                            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                Submit to GreenSky (Stub)
+                            </button>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <a href="{{ url_for('records') }}" class="btn btn-secondary">
+                                Back to Records
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Pass data to JavaScript for copy functionality
+window.customerData = {
+    first_name: "{{ data.first_name }}",
+    last_name: "{{ data.last_name }}",
+    email: "{{ data.email }}",
+    mobile_phone: "{{ data.mobile_phone }}",
+    ssn: "{{ data.ssn }}",
+    dob: "{{ data.dob }}",
+    annual_income: "{{ data.annual_income }}",
+    employment_status: "{{ data.employment_status }}",
+    driver_license_number: "{{ data.driver_license_number }}",
+    driver_license_state: "{{ data.driver_license_state }}",
+    address_line1: "{{ data.address_line1 }}",
+    address_line2: "{{ data.address_line2 }}",
+    city: "{{ data.city }}",
+    state: "{{ data.state }}",
+    zip: "{{ data.zip }}",
+    project_cost: "{{ data.project_cost }}",
+    notes: "{{ data.notes }}"
+};
+</script>
+{% endblock %}
