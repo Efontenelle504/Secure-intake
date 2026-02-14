@@ -455,109 +455,118 @@ def dashboard():
     response.set_cookie('csrf_token', csrf_token or '', httponly=True, samesite='Lax')
     return response
 
+def submit_to_ghl(payload):
+    """Send lead payload to GoHighLevel webhook when configured."""
+    webhook_url = os.environ.get('GHL_WEBHOOK_URL', '').strip()
+    if not webhook_url:
+        logger.warning('GHL_WEBHOOK_URL not set; lead captured locally only.')
+        return False, 'Webhook is not configured.'
+
+    try:
+        import urllib.request
+
+        request_payload = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(
+            webhook_url,
+            data=request_payload,
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+
+        with urllib.request.urlopen(req, timeout=10) as response:
+            status = response.getcode()
+
+        if 200 <= status < 300:
+            return True, None
+
+        logger.error(f'Unexpected GHL status code: {status}')
+        return False, f'Unexpected status code: {status}'
+    except Exception as exc:
+        logger.error(f'Failed to submit lead to GHL: {exc}')
+        return False, str(exc)
+
+
 @app.route('/', methods=['GET', 'POST'])
-@login_required
 def index():
-    """Intake form route - now requires login"""
+    """Public marketing landing page with server-side lead capture."""
     csrf_token = generate_csrf_token()
-    
+
     if request.method == 'POST':
         if not validate_csrf_token():
             return redirect(url_for('index'))
-        
-        # Extract form data
+
         form_data = {
-            'first_name': request.form.get('first_name', '').strip(),
-            'last_name': request.form.get('last_name', '').strip(),
+            'name': request.form.get('name', '').strip(),
+            'phone': request.form.get('phone', '').strip(),
             'email': request.form.get('email', '').strip(),
-            'mobile_phone': request.form.get('mobile_phone', '').strip(),
-            'ssn': request.form.get('ssn', '').strip(),
-            'dob': request.form.get('dob', '').strip(),
-            'employer': request.form.get('employer', '').strip(),
-            'occupation': request.form.get('occupation', '').strip(),
-            'monthly_income': request.form.get('monthly_income', '').strip(),
-            'employment_status': request.form.get('employment_status', '').strip(),
-            'driver_license_number': request.form.get('driver_license_number', '').strip(),
-            'driver_license_state': request.form.get('driver_license_state', '').strip().upper(),
-            'address_line1': request.form.get('address_line1', '').strip(),
-            'address_line2': request.form.get('address_line2', '').strip(),
-            'city': request.form.get('city', '').strip(),
-            'state': request.form.get('state', '').strip().upper(),
             'zip': request.form.get('zip', '').strip(),
-            'project_cost': request.form.get('project_cost', '').strip(),
-            'notes': request.form.get('notes', '').strip(),
-            'consent_soft_pull': request.form.get('consent_soft_pull') == 'on',
-            'consent_share': request.form.get('consent_share') == 'on'
+            'service': request.form.get('service', '').strip(),
+            'timeline': request.form.get('timeline', '').strip(),
+            'message': request.form.get('message', '').strip(),
+            'utm_source': request.form.get('utm_source', '').strip(),
+            'utm_medium': request.form.get('utm_medium', '').strip(),
+            'utm_campaign': request.form.get('utm_campaign', '').strip(),
+            'utm_content': request.form.get('utm_content', '').strip(),
+            'utm_term': request.form.get('utm_term', '').strip(),
         }
-        
-        # Process additional income sources
-        additional_income = []
-        i = 1
-        while request.form.get(f'additional_income_source_{i}'):
-            source = request.form.get(f'additional_income_source_{i}', '').strip()
-            amount = request.form.get(f'additional_income_amount_{i}', '').strip()
-            if source and amount:
-                additional_income.append({
-                    'source': source,
-                    'amount': amount
-                })
-            i += 1
-        
-        if additional_income:
-            form_data['additional_income'] = additional_income
-        
-        # Process co-applicant information if provided
-        co_applicant_data = {}
-        co_fields = ['co_first_name', 'co_last_name', 'co_email', 'co_mobile_phone', 
-                    'co_ssn', 'co_dob', 'co_employer', 'co_occupation', 
-                    'co_monthly_income', 'co_employment_status']
-        
-        for field in co_fields:
-            value = request.form.get(field, '').strip()
-            if value:
-                co_applicant_data[field] = value
-        
-        if co_applicant_data:
-            form_data['co_applicant'] = co_applicant_data
-        
-        # Validate data
-        errors = validate_intake_data(form_data)
+
+        errors = []
+        if not form_data['name']:
+            errors.append('Name is required.')
+        if not form_data['phone']:
+            errors.append('Phone is required.')
+        if not form_data['zip'] or not re.match(r'^\d{5}$', form_data['zip']):
+            errors.append('ZIP code must be 5 digits.')
+        if form_data['email'] and not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', form_data['email']):
+            errors.append('Email format is invalid.')
+
         if errors:
             for error in errors:
                 flash(error, 'error')
             response = make_response(render_template('index.html', csrf_token=csrf_token, form_data=form_data))
             response.set_cookie('csrf_token', csrf_token or '', httponly=True, samesite='Lax')
             return response
-        
-        try:
-            # Encrypt the data
-            encrypted_blob = encrypt_dict(form_data)
-            
-            # Import Intake model dynamically to avoid circular imports
-            from models import Intake
-            
-            # Create new intake record
-            intake = Intake()
-            intake.encrypted_blob = encrypted_blob
-            intake.created_by = current_user.id  # Track who created the record
-            db.session.add(intake)
-            db.session.commit()
-            
-            logger.info(f"New intake record created with ID: {intake.id}")
-            flash('Intake form submitted successfully!', 'success')
-            
-            response = make_response(redirect(url_for('record', id=intake.id)))
-            response.set_cookie('csrf_token', csrf_token or '', httponly=True, samesite='Lax')
-            return response
-            
-        except Exception as e:
-            logger.error(f"Error saving intake: {e}")
-            flash('An error occurred while saving your information. Please try again.', 'error')
-            db.session.rollback()
-    
+
+        payload = {
+            'source': 'website',
+            'landing_path': request.path,
+            'submitted_at': datetime.utcnow().isoformat() + 'Z',
+            'name': form_data['name'],
+            'phone': form_data['phone'],
+            'email': form_data['email'],
+            'zip': form_data['zip'],
+            'service': form_data['service'],
+            'timeline': form_data['timeline'],
+            'message': form_data['message'],
+            'utm': {
+                'source': form_data['utm_source'],
+                'medium': form_data['utm_medium'],
+                'campaign': form_data['utm_campaign'],
+                'content': form_data['utm_content'],
+                'term': form_data['utm_term'],
+            },
+        }
+
+        submitted, error = submit_to_ghl(payload)
+        if submitted:
+            logger.info('Lead submitted to GHL successfully.')
+        else:
+            logger.warning(f'Lead not sent to GHL: {error}')
+
+        session['lead_name'] = form_data['name']
+        response = make_response(redirect(url_for('thank_you')))
+        response.set_cookie('csrf_token', csrf_token or '', httponly=True, samesite='Lax')
+        return response
+
     response = make_response(render_template('index.html', csrf_token=csrf_token))
     response.set_cookie('csrf_token', csrf_token or '', httponly=True, samesite='Lax')
     return response
+
+
+@app.route('/thank-you')
+def thank_you():
+    lead_name = session.get('lead_name')
+    return render_template('thank_you.html', lead_name=lead_name)
 
 @app.route('/record/<int:id>')
 @login_required
